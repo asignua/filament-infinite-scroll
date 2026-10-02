@@ -23,7 +23,7 @@ class PostResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->alignEnd(),
-                TextColumn::make('title')->searchable()->sortable(),
+                TextColumn::make('title')->searchable(isIndividual: true, isGlobal: true)->sortable(),
                 TextColumn::make('status'),
             ])
             ->filters([
@@ -35,6 +35,7 @@ class PostResource extends Resource
                     BulkAction::make('publish')->action(fn ($records) => $records->each->update(['status' => 'published'])),
                 ]),
             ])
+            ->groups(['status'])
             ->defaultSort('id')
             ->infiniteScroll(perPage: 10, maxRecords: 35);
     }

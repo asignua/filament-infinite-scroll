@@ -9,12 +9,15 @@ use Asignua\FilamentInfiniteScroll\InfiniteScrollConfig;
 use Asignua\FilamentInfiniteScroll\InfiniteScrollMode;
 use Asignua\FilamentInfiniteScroll\InfiniteScrollRegistry;
 use Asignua\FilamentInfiniteScroll\Livewire\InfiniteScrollHook;
+use Illuminate\Support\Number;
 use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Livewire;
+use ValueError;
 use Workbench\App\Filament\Resources\Posts\Pages\ListPosts;
 use Workbench\App\Filament\Resources\Teams\Pages\EditTeam;
 use Workbench\App\Filament\Resources\Teams\Pages\ListTeams;
 use Workbench\App\Filament\Resources\Teams\RelationManagers\PostsRelationManager;
+use Workbench\App\Filament\Widgets\AllPostsWidget;
 use Workbench\App\Filament\Widgets\LatestPostsWidget;
 use Workbench\App\Models\Post;
 use Workbench\App\Models\Team;
@@ -43,6 +46,8 @@ class InfiniteScrollTest extends TestCase
         $component->assertSee('Showing 10 of 25');
         $component->assertSeeHtml('x-intersect.margin.300px="load()"');
         $component->assertSeeHtml('data-mode="scroll"');
+        $component->assertSeeHtml('data-loaded="10"');
+        $component->assertSeeHtml('data-has-more="1"');
     }
 
     public function test_load_more_grows_the_list_one_chunk_at_a_time(): void
@@ -68,6 +73,8 @@ class InfiniteScrollTest extends TestCase
 
         $component->assertSee('All 15 records are loaded');
         $component->assertDontSeeHtml('x-intersect');
+        // The scroll loop reads this after its request and stops.
+        $component->assertSeeHtml('data-has-more="0"');
     }
 
     public function test_a_table_that_fits_in_one_chunk_shows_no_footer(): void
@@ -75,8 +82,11 @@ class InfiniteScrollTest extends TestCase
         $this->posts(6);
 
         Livewire::test(ListPosts::class)
-            ->assertDontSeeHtml('fi-ta-infinite-scroll')
-            ->assertDontSeeHtml('x-intersect');
+            ->assertDontSeeHtml('class="fi-ta-infinite-scroll"')
+            ->assertDontSeeHtml('fi-ta-infinite-scroll-status')
+            ->assertDontSeeHtml('x-intersect')
+            // An empty marker still lets the stylesheet hide Filament's own pager.
+            ->assertSeeHtml('fi-ta-infinite-scroll-marker');
     }
 
     public function test_the_ceiling_is_respected_and_announced(): void
@@ -100,11 +110,39 @@ class InfiniteScrollTest extends TestCase
 
         $component = Livewire::test(ListPosts::class)->set('tableRecordsPerPage', 100000);
 
-        $this->assertSame(35, $this->loaded($component));
+        // Only `infiniteScrollLoadMore` grows the list: a raised size falls back to the issued one.
+        $this->assertSame(10, $this->loaded($component));
+
+        $component->call(InfiniteScrollHook::METHOD)->set('tableRecordsPerPage', 15);
+
+        // Lowering is allowed, but always to a whole number of chunks.
+        $this->assertSame(10, $this->loaded($component));
 
         $component->set('tableRecordsPerPage', 'all');
 
         $this->assertSame(10, $this->loaded($component));
+    }
+
+    public function test_a_tampered_page_size_is_clamped_without_a_ceiling(): void
+    {
+        $this->posts(30);
+
+        $component = Livewire::test(AllPostsWidget::class);
+
+        $this->assertSame(5, $this->loaded($component));
+
+        $component->set('tableRecordsPerPage', 100000000);
+
+        $this->assertSame(5, $this->loaded($component));
+        $this->assertSame(5, $component->get('tableRecordsPerPage'));
+
+        $component->call(InfiniteScrollHook::METHOD)->call(InfiniteScrollHook::METHOD);
+
+        $this->assertSame(15, $this->loaded($component));
+
+        $component->set('tableRecordsPerPage', 29);
+
+        $this->assertSame(15, $this->loaded($component));
     }
 
     public function test_searching_starts_over_from_the_first_chunk(): void
@@ -155,6 +193,91 @@ class InfiniteScrollTest extends TestCase
         $component->sortTable('title');
 
         $this->assertSame(10, $this->loaded($component));
+    }
+
+    public function test_column_search_starts_over_from_the_first_chunk(): void
+    {
+        $this->posts(30);
+        $this->posts(30, 'published');
+
+        $component = Livewire::test(ListPosts::class)->call(InfiniteScrollHook::METHOD);
+
+        $this->assertSame(20, $this->loaded($component));
+
+        $component->set('tableColumnSearches.title', 'published');
+
+        $this->assertSame(10, $this->loaded($component));
+        $this->assertSame(10, $component->get('tableRecordsPerPage'));
+    }
+
+    public function test_grouping_starts_over_from_the_first_chunk(): void
+    {
+        $this->posts(30);
+
+        $component = Livewire::test(ListPosts::class)->call(InfiniteScrollHook::METHOD);
+
+        $this->assertSame(20, $this->loaded($component));
+
+        $component->set('tableGrouping', 'status');
+
+        $this->assertSame(10, $this->loaded($component));
+        $this->assertSame(10, $component->get('tableRecordsPerPage'));
+    }
+
+    public function test_switching_tabs_starts_over_from_the_first_chunk(): void
+    {
+        $this->posts(30);
+        $this->posts(30, 'published');
+
+        $component = Livewire::test(ListPosts::class)->call(InfiniteScrollHook::METHOD);
+
+        $this->assertSame(20, $this->loaded($component));
+
+        $component->set('activeTab', 'published');
+
+        $this->assertSame(10, $this->loaded($component));
+        $this->assertSame(10, $component->get('tableRecordsPerPage'));
+    }
+
+    public function test_a_query_change_made_in_code_drops_rows_read_before_it(): void
+    {
+        $this->posts(30);
+        $this->posts(30, 'published');
+
+        $component = Livewire::test(ListPosts::class)
+            ->call(InfiniteScrollHook::METHOD)
+            ->call('searchFromCode');
+
+        $this->assertSame(10, $this->loaded($component));
+        $component->assertSee('Showing 10 of 30');
+    }
+
+    public function test_counts_are_formatted_for_the_current_locale(): void
+    {
+        Post::insert(array_map(
+            fn (int $i): array => ['team_id' => 1, 'title' => "post {$i}", 'status' => 'draft'],
+            range(1, 1234),
+        ));
+
+        app()->setLocale('uk');
+
+        $formatted = Number::format(1234, locale: 'uk');
+
+        $this->assertNotSame('1,234', $formatted);
+
+        $key = 'filament-infinite-scroll::infinite-scroll.showing';
+
+        // Filament's own (hidden) pager formats its numbers by itself: look at the footer only.
+        Livewire::test(ListPosts::class)
+            ->assertSee(__($key, ['loaded' => 10, 'total' => $formatted]))
+            ->assertDontSee(__($key, ['loaded' => 10, 'total' => '1,234']));
+    }
+
+    public function test_an_unknown_mode_is_rejected(): void
+    {
+        $this->expectException(ValueError::class);
+
+        InfiniteScroll::configure(Livewire::test(ListTeams::class)->instance()->getTable(), mode: 'pages');
     }
 
     public function test_a_stale_page_parameter_is_ignored(): void
@@ -266,6 +389,8 @@ class InfiniteScrollTest extends TestCase
         $unlimited = new InfiniteScrollConfig(10, InfiniteScrollMode::Scroll, null, 300);
 
         $this->assertSame(500, $unlimited->clamp(500));
+        $this->assertSame(500, $unlimited->clamp(509));
+        $this->assertSame(30, $config->clamp(34));
 
         $low = new InfiniteScrollConfig(10, InfiniteScrollMode::Scroll, 3, 300);
 

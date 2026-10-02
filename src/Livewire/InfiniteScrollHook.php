@@ -35,6 +35,8 @@ class InfiniteScrollHook extends ComponentHook
 
     private const string STORE = 'infinite-scroll.signature';
 
+    private const string STORE_SIZE = 'infinite-scroll.size';
+
     /**
      * The properties that decide WHICH rows the table shows. A change in any of them starts
      * the list over from the first chunk.
@@ -53,8 +55,20 @@ class InfiniteScrollHook extends ComponentHook
      */
     public function hydrate(array $memo): void
     {
-        if (isset($memo[self::MEMO]) && is_string($memo[self::MEMO])) {
-            $this->storeSet(self::STORE, $memo[self::MEMO]);
+        $state = $memo[self::MEMO] ?? null;
+
+        if (!is_array($state)) {
+            return;
+        }
+
+        if (isset($state['signature']) && is_string($state['signature'])) {
+            $this->storeSet(self::STORE, $state['signature']);
+        }
+
+        // The page size the server issued last. The memo is covered by Livewire's snapshot
+        // checksum, so unlike `tableRecordsPerPage` the browser cannot change it.
+        if (isset($state['size']) && is_int($state['size'])) {
+            $this->storeSet(self::STORE_SIZE, $state['size']);
         }
     }
 
@@ -88,9 +102,10 @@ class InfiniteScrollHook extends ComponentHook
     public function dehydrate(ComponentContext $context): void
     {
         $signature = $this->storeGet(self::STORE);
+        $size = $this->storeGet(self::STORE_SIZE);
 
-        if (is_string($signature) && $this->config() !== null) {
-            $context->addMemo(self::MEMO, $signature);
+        if (is_string($signature) && is_int($size) && $this->config() !== null) {
+            $context->addMemo(self::MEMO, ['signature' => $signature, 'size' => $size]);
         }
     }
 
@@ -139,7 +154,10 @@ class InfiniteScrollHook extends ComponentHook
 
         $this->sync();
 
-        $this->setPerPage($component, $config->next($this->perPage($component)));
+        $perPage = $config->next($this->perPage($component));
+
+        $this->setPerPage($component, $perPage);
+        $this->storeSet(self::STORE_SIZE, $perPage);
 
         $this->flush($component);
     }
@@ -159,16 +177,27 @@ class InfiniteScrollHook extends ComponentHook
         // The very first request has nothing to compare with: that is not a change.
         if (is_string($previous) && $previous !== $signature) {
             $this->setPerPage($component, $config->perPage);
+            $this->storeSet(self::STORE_SIZE, $config->perPage);
+            // Rows read earlier in this request were read with the old, larger size.
+            $this->flush($component);
         }
 
         $this->storeSet(self::STORE, $signature);
 
-        $perPage = $config->clamp($this->perPage($component));
+        // The browser may lower the size but never raise it past what the server issued: only
+        // `infiniteScrollLoadMore` grows the list, one chunk at a time. Without this, a table
+        // with no ceiling would load any number of rows in one request.
+        $issued = $this->storeGet(self::STORE_SIZE);
+        $allowed = is_int($issued) ? $issued : $config->perPage;
+
+        $perPage = $config->clamp(min($this->perPage($component), $allowed));
 
         if ($this->perPage($component) !== $perPage) {
             $this->setPerPage($component, $perPage);
             $this->flush($component);
         }
+
+        $this->storeSet(self::STORE_SIZE, $perPage);
 
         // Growth never uses pages. A stale `?page=3` from a bookmark would skip the first rows.
         if ((int) $component->getTablePage() !== 1) {

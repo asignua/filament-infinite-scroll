@@ -25,7 +25,7 @@ class ComposerDiscoveryTest extends TestCase
         // not directly inside .fi-ta-ctn: a selector on .fi-ta-ctn never matches in a real browser.
         $css = (string) file_get_contents(__DIR__.'/../resources/dist/filament-infinite-scroll.css');
 
-        $this->assertStringContainsString('.fi-ta-main:has(> .fi-ta-infinite-scroll) > .fi-pagination', $css);
+        $this->assertStringContainsString('.fi-ta-main:has(> .fi-ta-infinite-scroll, > .fi-ta-infinite-scroll-marker) > .fi-pagination', $css);
         $this->assertStringNotContainsString('.fi-ta-ctn:has(', $css);
     }
 }

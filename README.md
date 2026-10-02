@@ -86,7 +86,8 @@ Every argument is optional and defaults to `config/filament-infinite-scroll.php`
 | `button` | A "Load more" button under the table. |
 
 Under the rows the table shows "Showing 25 of 120", then "All 120 records are loaded" when the list is complete. A
-table with fewer rows than one chunk shows no footer at all.
+table with fewer rows than one chunk shows no footer at all, and no stock pager either. Counts are formatted for the
+current app locale.
 
 ## How it works
 
@@ -96,8 +97,10 @@ Filament's table is one query and one Blade view. The plugin forks neither.
    the page stays 1. Because it is still a single paginated query, selection, "select all", bulk actions, grouping,
    summaries and record actions work exactly as on a normal page.
 2. **A global Livewire hook** answers the `infiniteScrollLoadMore` call, so no trait or base class has to be added to
-   your pages, relation managers or widgets. The same hook keeps the page size inside `[one chunk, ceiling]` (the
-   value is client-writable, so it is clamped on the server) and pins the page number to 1.
+   your pages, relation managers or widgets. The same hook keeps the page size inside `[one chunk, ceiling]` and pins
+   the page number to 1. The value is client-writable, so the server also remembers the size it issued last (in the
+   checksummed memo) and never lets the browser raise it: the list grows only one chunk per call, with or without a
+   ceiling.
 3. **A render hook** (`TablesRenderHook::CONTENT_AFTER`) draws the footer: the status line, the `x-intersect`
    sentinel or the button (`<x-filament::button>`).
 4. **Reset on change.** A signature of the search, column searches, filters, sort, grouping and the active tab is kept

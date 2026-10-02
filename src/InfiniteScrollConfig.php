@@ -30,14 +30,19 @@ final readonly class InfiniteScrollConfig
     }
 
     /**
-     * Keeps a page size between one chunk and the ceiling. The size lives in a public Livewire
-     * property, so whatever the browser sends is brought back into range here.
+     * Keeps a page size between one chunk and the ceiling, on a whole number of chunks (or the
+     * ceiling itself). The size lives in a public Livewire property, so whatever the browser
+     * sends is brought back into range here.
      */
     public function clamp(int $perPage): int
     {
-        $perPage = max($perPage, $this->perPage);
+        $limit = $this->limit();
 
-        return $this->maxRecords === null ? $perPage : min($perPage, $this->limit());
+        if ($perPage >= $limit) {
+            return $limit;
+        }
+
+        return max(intdiv($perPage, $this->perPage) * $this->perPage, $this->perPage);
     }
 
     /**
