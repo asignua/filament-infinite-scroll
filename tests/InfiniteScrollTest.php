@@ -220,6 +220,27 @@ class InfiniteScrollTest extends TestCase
         $component->assertSeeHtml('x-intersect.margin.300px="load()"');
     }
 
+    public function test_every_successful_load_replaces_the_sentinel_so_a_tall_screen_keeps_filling(): void
+    {
+        $this->posts(60);
+
+        $component = Livewire::test(ListPosts::class);
+        $prefix = $component->id().'.infinite-scroll.';
+
+        $component->call(InfiniteScrollHook::METHOD);
+
+        // The key moved with the loaded count, so the morph swaps in a fresh element whose new
+        // IntersectionObserver fires at once if the footer is still in view: that is the auto-fill.
+        $component
+            ->assertSeeHtml('wire:key="'.$prefix.'20"')
+            ->assertDontSeeHtml('wire:key="'.$prefix.'10"')
+            ->assertSeeHtml('x-intersect.margin.300px="load()"');
+
+        // The old element is detached by then, so load() must not try to chain from it: such a
+        // branch could never run and would only mislead.
+        $component->assertDontSeeHtml('getBoundingClientRect');
+    }
+
     public function test_column_search_starts_over_from_the_first_chunk(): void
     {
         $this->posts(30);

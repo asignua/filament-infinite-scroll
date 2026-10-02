@@ -8,8 +8,9 @@
     $locale = app()->getLocale();
     // A new key for every server state makes the morph REPLACE the element instead of patching it in
     // place: a fresh Alpine component and a fresh IntersectionObserver, whose first callback fires
-    // while the footer is already in view (after a sort/filter reset on a short page, say). A request
-    // that added nothing keeps the key, so a failing load does not loop.
+    // while the footer is already in view. That one mechanism both fills a tall screen chunk by chunk
+    // (each successful load changes $loaded) and re-arms the sentinel after a sort/filter reset. A
+    // request that added nothing keeps the key, so a failing load does not loop.
     $key = $this->getId().'.infinite-scroll.'.($hasMore ? $loaded : 'done-'.$loaded);
 @endphp
 
@@ -31,28 +32,15 @@
 
                     this.busy = true
 
-                    const before = Number(this.$el.dataset.loaded)
-
+                    // No chaining here on purpose. A load that added rows changes the wire:key,
+                    // so the morph replaces this element: the new one gets its own
+                    // IntersectionObserver, whose first callback fires while it is still in view
+                    // (a tall screen) and loads the next chunk. A load that added nothing keeps
+                    // the key, the element is patched in place, and nothing fires again.
                     try {
                         await this.$wire.{{ $method }}()
                     } finally {
                         this.busy = false
-                    }
-
-                    await this.$nextTick()
-
-                    // The new rows may not have pushed the end out of view yet (a tall screen).
-                    // The morph patches this element in place, so its attributes are the
-                    // server's answer: stop at the last chunk, at the ceiling and when a failed
-                    // request added nothing.
-                    if (
-                        this.$el.isConnected &&
-                        this.$el.dataset.hasMore === '1' &&
-                        Number(this.$el.dataset.loaded) > before &&
-                        this.$el.getBoundingClientRect().top <
-                            window.innerHeight + {{ $config->rootMargin }}
-                    ) {
-                        this.load()
                     }
                 },
             }"
