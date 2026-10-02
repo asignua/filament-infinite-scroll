@@ -6,12 +6,18 @@
     $isCapped = $loaded < $total && ! $hasMore;
     $isScroll = $config->mode === InfiniteScrollMode::Scroll;
     $locale = app()->getLocale();
+    // A new key for every server state makes the morph REPLACE the element instead of patching it in
+    // place: a fresh Alpine component and a fresh IntersectionObserver, whose first callback fires
+    // while the footer is already in view (after a sort/filter reset on a short page, say). A request
+    // that added nothing keeps the key, so a failing load does not loop.
+    $key = $this->getId().'.infinite-scroll.'.($hasMore ? $loaded : 'done-'.$loaded);
 @endphp
 
 {{-- Nothing to say while the whole list fits in the first chunk; the empty marker below still hides Filament's own pager, so short and long tables look alike. --}}
 @if ($hasMore || $isCapped || $loaded > $config->perPage)
     <div
         class="fi-ta-infinite-scroll"
+        wire:key="{{ $key }}"
         data-mode="{{ $config->mode->value }}"
         data-loaded="{{ $loaded }}"
         data-has-more="{{ $hasMore ? '1' : '0' }}"
@@ -78,5 +84,5 @@
         @endif
     </div>
 @else
-    <div class="fi-ta-infinite-scroll-marker" hidden></div>
+    <div class="fi-ta-infinite-scroll-marker" wire:key="{{ $this->getId() }}.infinite-scroll.marker" hidden></div>
 @endif

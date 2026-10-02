@@ -77,7 +77,6 @@ class FilamentInfiniteScrollServiceProvider extends PackageServiceProvider
                     'config' => $config,
                     'loaded' => count($records->items()),
                     'total' => $records->total(),
-                    'first' => $records->firstItem() ?? 0,
                     'method' => InfiniteScrollHook::METHOD,
                 ])->render();
             },

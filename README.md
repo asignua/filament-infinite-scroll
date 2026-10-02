@@ -162,6 +162,16 @@ vendor/bin/pint --test
 The suite runs on [Orchestra Testbench](https://packages.tools/testbench) with a `workbench/` panel: a resource, a
 relation manager and a table widget.
 
+The suite checks what the server renders (`data-has-more`, `data-loaded`, the footer's `wire:key`), not the Alpine
+code that reads it. Before a release, check scroll mode by hand in a browser:
+
+1. A tall viewport with many records: the list fills the screen on its own and stops once the footer is out of view.
+2. Scroll to the ceiling: loading stops and the "Showing the first N" notice appears; no further requests in the
+   network tab.
+3. With the footer still in view (all or the ceiling loaded), sort or filter: the list starts over and, on a short
+   page, loads the next chunk again without scrolling.
+4. Make a load request fail (go offline): the footer does not retry in a loop.
+
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/asignua/filament-infinite-scroll/blob/main/CHANGELOG.md).

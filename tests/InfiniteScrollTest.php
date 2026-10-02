@@ -195,6 +195,31 @@ class InfiniteScrollTest extends TestCase
         $this->assertSame(10, $this->loaded($component));
     }
 
+    public function test_the_sentinel_gets_a_new_key_whenever_the_server_state_changes(): void
+    {
+        $this->posts(60);
+
+        $component = Livewire::test(ListPosts::class);
+        $prefix = $component->id().'.infinite-scroll.';
+
+        $component->assertSeeHtml('wire:key="'.$prefix.'10"');
+
+        foreach (range(1, 3) as $ignored) {
+            $component->call(InfiniteScrollHook::METHOD);
+        }
+
+        // At the ceiling the sentinel is gone and the element carries a key of its own.
+        $component->assertSeeHtml('wire:key="'.$prefix.'done-35"');
+
+        // A reset with the footer still in view must replace the element, not patch it: a fresh
+        // Alpine component and IntersectionObserver fire again without the user scrolling.
+        $component->sortTable('title');
+
+        $this->assertSame(10, $this->loaded($component));
+        $component->assertSeeHtml('wire:key="'.$prefix.'10"');
+        $component->assertSeeHtml('x-intersect.margin.300px="load()"');
+    }
+
     public function test_column_search_starts_over_from_the_first_chunk(): void
     {
         $this->posts(30);
