@@ -2,7 +2,7 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
-## v1.0.0 - unreleased
+## v1.0.0 - 2026-10-05
 
 - `Table::infiniteScroll()`: a table grows chunk by chunk instead of paging. Works in resources, relation managers and table widgets.
 - Two modes: `scroll` (the next chunk loads when the end of the table comes into view) and `button` ("Load more").
