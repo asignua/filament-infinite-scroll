@@ -1,6 +1,6 @@
 {
     "name": "asignua/filament-infinite-scroll",
-    "description": "Infinite scroll and a \"Load more\" button for Filament tables: resources, relation managers and table widgets.",
+    "description": "Infinite scroll and a \"Load more\" button for Filament 5 tables with one line: ->infiniteScroll(). Works in resources, relation managers, table widgets and any page with InteractsWithTable; filters, search, sorting and bulk selection keep working while the table grows. Configurable chunk size, a record ceiling and how early the next chunk is requested.",
     "keywords": [
         "filament",
         "filament-plugin",
