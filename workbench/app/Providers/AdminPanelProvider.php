@@ -19,6 +19,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Workbench\App\Filament\Resources\Posts\PostResource;
 use Workbench\App\Filament\Resources\Teams\TeamResource;
 use Workbench\App\Filament\Widgets\AllPostsWidget;
+use Workbench\App\Filament\Widgets\FilteredPostsWidget;
 use Workbench\App\Filament\Widgets\LatestPostsWidget;
 
 class AdminPanelProvider extends PanelProvider
@@ -31,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->resources([TeamResource::class, PostResource::class])
-            ->widgets([LatestPostsWidget::class, AllPostsWidget::class])
+            ->widgets([LatestPostsWidget::class, AllPostsWidget::class, FilteredPostsWidget::class])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

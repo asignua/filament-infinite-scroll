@@ -103,7 +103,7 @@ Filament's table is one query and one Blade view. The plugin forks neither.
    ceiling.
 3. **A render hook** (`TablesRenderHook::CONTENT_AFTER`) draws the footer: the status line, the `x-intersect`
    sentinel or the button (`<x-filament::button>`).
-4. **Reset on change.** A signature of the search, column searches, filters, sort, grouping and the active tab is kept
+4. **Reset on change.** A signature of the search, column searches, filters, sort, grouping, the active tab and a widget's dashboard `pageFilters` is kept
    in the Livewire memo (checksummed with the snapshot). When it changes the list starts over from the first chunk.
 
 Scroll position is preserved: Livewire morphs the new rows in below the existing ones.

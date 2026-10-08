@@ -18,6 +18,7 @@ use Workbench\App\Filament\Resources\Teams\Pages\EditTeam;
 use Workbench\App\Filament\Resources\Teams\Pages\ListTeams;
 use Workbench\App\Filament\Resources\Teams\RelationManagers\PostsRelationManager;
 use Workbench\App\Filament\Widgets\AllPostsWidget;
+use Workbench\App\Filament\Widgets\FilteredPostsWidget;
 use Workbench\App\Filament\Widgets\LatestPostsWidget;
 use Workbench\App\Models\Post;
 use Workbench\App\Models\Team;
@@ -414,6 +415,35 @@ class InfiniteScrollTest extends TestCase
 
         $this->assertSame(12, $this->loaded($component));
         $component->assertSee('Showing the first 12 of 30 records');
+    }
+
+    public function test_changing_the_dashboard_filters_of_a_widget_starts_over(): void
+    {
+        $this->posts(20);
+        $this->posts(20, 'published');
+
+        $component = Livewire::test(FilteredPostsWidget::class);
+
+        $component->call(InfiniteScrollHook::METHOD)->call(InfiniteScrollHook::METHOD);
+        $this->assertSame(15, $this->loaded($component));
+
+        $component->set('pageFilters', ['status' => 'published']);
+
+        $this->assertSame(5, $this->loaded($component));
+        $this->assertSame(5, $component->get('tableRecordsPerPage'));
+    }
+
+    public function test_the_footer_and_status_line_keep_their_key_in_button_mode(): void
+    {
+        $this->posts(25);
+        config()->set('filament-infinite-scroll.mode', 'button');
+
+        $component = Livewire::test(ListPosts::class);
+        $key = $component->id().'.infinite-scroll.footer';
+
+        $component->assertSeeHtml('wire:key="'.$key.'"')->assertSeeHtml('role="status"');
+        $component->call(InfiniteScrollHook::METHOD);
+        $component->assertSeeHtml('wire:key="'.$key.'"');
     }
 
     public function test_an_unknown_component_is_not_affected(): void

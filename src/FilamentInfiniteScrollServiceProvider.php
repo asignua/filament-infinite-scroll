@@ -67,7 +67,9 @@ class FilamentInfiniteScrollServiceProvider extends PackageServiceProvider
                     return '';
                 }
 
-                $config = $this->app->make(InfiniteScrollRegistry::class)->get($table);
+                // From the current container, never `$this->app`: under Octane that is the worker's base
+                // app, while `configure()` registered the table in the per-request one.
+                $config = app(InfiniteScrollRegistry::class)->get($table);
 
                 if ($config === null || $records->isEmpty()) {
                     return '';

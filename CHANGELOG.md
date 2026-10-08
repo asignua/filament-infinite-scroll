@@ -2,6 +2,13 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
+## Unreleased
+
+- Fixed: the footer render hook resolves the registry from the current container, so the footer is drawn under Octane's per-request sandbox.
+- Fixed: in button mode "Load more" keeps keyboard focus after a click (the footer has a stable `wire:key`; only the scroll sentinel is re-keyed); when the last chunk loads, focus moves to the status line.
+- Fixed: the `role="status"` line is patched in place, so screen readers announce the new count.
+- Fixed: changing the dashboard filters (`pageFilters`) of a table widget starts the list over from the first chunk.
+
 ## v1.0.0 - 2026-10-05
 
 - `Table::infiniteScroll()`: a table grows chunk by chunk instead of paging. Works in resources, relation managers and table widgets.

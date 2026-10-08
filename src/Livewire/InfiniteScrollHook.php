@@ -48,6 +48,8 @@ class InfiniteScrollHook extends ComponentHook
         'tableSort',
         'tableGrouping',
         'activeTab',
+        // The dashboard filters of a table widget: a reactive prop, changed during hydrate.
+        'pageFilters',
     ];
 
     /**
