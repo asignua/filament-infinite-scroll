@@ -2,7 +2,7 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
-## Unreleased
+## v1.0.1 - 2026-10-08
 
 - Fixed: the footer render hook resolves the registry from the current container, so the footer is drawn under Octane's per-request sandbox.
 - Fixed: in button mode "Load more" keeps keyboard focus after a click (the footer has a stable `wire:key`; only the scroll sentinel is re-keyed); when the last chunk loads, focus moves to the status line.
