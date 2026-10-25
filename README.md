@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/packagist/l/asignua/filament-infinite-scroll.svg?style=flat-square)](https://github.com/asignua/filament-infinite-scroll/blob/main/LICENSE.md)
 [![Plumb score](https://plumbphp.dev/badges/asignua/filament-infinite-scroll/composite.svg)](https://plumbphp.dev/asignua/filament-infinite-scroll)
 
-<img class="filament-hidden" src="https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.0/art/cover.jpg" alt="Filament Infinite Scroll">
+<img class="filament-hidden" src="https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.2/art/cover.jpg" alt="Filament Infinite Scroll">
 
 Infinite scroll and a "Load more" button for [Filament](https://filamentphp.com) tables, with one line:
 
@@ -33,9 +33,9 @@ only. This one is built for Filament 5.
 
 ## Screenshots
 
-![Scroll mode loading the next chunk](https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.0/art/scrolling.jpg)
+![Scroll mode loading the next chunk](https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.2/art/scrolling.jpg)
 
-![Everything loaded](https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.0/art/all-loaded.jpg)
+![Everything loaded](https://raw.githubusercontent.com/asignua/filament-infinite-scroll/v1.0.2/art/all-loaded.jpg)
 
 ## Requirements
 

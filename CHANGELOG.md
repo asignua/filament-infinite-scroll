@@ -2,6 +2,11 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
+## v1.0.2 - 2026-10-25
+
+- Screenshots and the cover carry the «made in asign» mark; README shows the Stand With Ukraine badge.
+- Dependency updates (CI actions, dev tooling).
+
 ## v1.0.1 - 2026-10-08
 
 - Fixed: the footer render hook resolves the registry from the current container, so the footer is drawn under Octane's per-request sandbox.
