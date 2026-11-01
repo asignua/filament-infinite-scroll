@@ -176,6 +176,15 @@ code that reads it. Before a release, check scroll mode by hand in a browser:
 
 See [CHANGELOG.md](https://github.com/asignua/filament-infinite-scroll/blob/main/CHANGELOG.md).
 
+## More plugins by asign
+
+- [Row Layout](https://filamentphp.com/plugins/asign-row-layout) — column manager for tables
+- [Group Summaries](https://filamentphp.com/plugins/asign-group-summaries) — summaries in table group headers
+- [Spreadsheet Grid](https://filamentphp.com/plugins/asign-spreadsheet-grid) — editable spreadsheet-style table
+- [Themes](https://filamentphp.com/plugins/asign-themes) — per-user and per-panel colour themes
+
+All plugins: <https://filamentphp.com/plugins?q=asign>
+
 ## License
 
 The MIT License (MIT). See [LICENSE.md](https://github.com/asignua/filament-infinite-scroll/blob/main/LICENSE.md).
