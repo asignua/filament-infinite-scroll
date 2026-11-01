@@ -11,7 +11,7 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
 use Filament\Tables\View\TablesRenderHook;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Livewire\Livewire;
+use Livewire\ComponentHookRegistry;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -35,6 +35,11 @@ class FilamentInfiniteScrollServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->scoped(InfiniteScrollRegistry::class);
+
+        // Livewire collects its component hooks once, in its own provider's boot(). Registered here
+        // (every provider's register() runs before any boot()), the hook is in place whatever the
+        // provider order is. Not via the Livewire facade: its provider may not be registered yet.
+        ComponentHookRegistry::register(InfiniteScrollHook::class);
     }
 
     public function packageBooted(): void
@@ -42,8 +47,6 @@ class FilamentInfiniteScrollServiceProvider extends PackageServiceProvider
         FilamentAsset::register([
             Css::make(self::STYLESHEET, __DIR__.'/../resources/dist/filament-infinite-scroll.css'),
         ], self::PACKAGE);
-
-        Livewire::componentHook(InfiniteScrollHook::class);
 
         Table::macro('infiniteScroll', function (
             ?int $perPage = null,

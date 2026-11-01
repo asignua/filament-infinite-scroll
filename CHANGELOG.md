@@ -2,6 +2,11 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
+## v1.0.3 - 2026-11-01
+
+- Fixed: the Livewire hook is registered in `packageRegistered` (before Livewire's provider boots), so the load-more call no longer fails with "Public method [infiniteScrollLoadMore] not found" when Livewire's provider boots before ours.
+- Committed `testbench.yaml` and a workbench seeder, so the workbench is reproducible.
+
 ## v1.0.2 - 2026-10-25
 
 - Screenshots and the cover carry the «made in asign» mark; README shows the Stand With Ukraine badge.
