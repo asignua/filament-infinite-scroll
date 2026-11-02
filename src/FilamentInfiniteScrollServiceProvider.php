@@ -78,7 +78,7 @@ class FilamentInfiniteScrollServiceProvider extends PackageServiceProvider
                     return '';
                 }
 
-                return view('filament-infinite-scroll::footer', [ // @phpstan-ignore argument.type
+                return view('filament-infinite-scroll::footer', [
                     'config' => $config,
                     'loaded' => count($records->items()),
                     'total' => $records->total(),
