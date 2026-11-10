@@ -5,6 +5,7 @@ All notable changes to `asignua/filament-infinite-scroll` are documented here.
 ## v1.1.0 - 2026-11-10
 
 - Requires Filament ^5.11.2; no deprecated Filament API was in use, so no code changes.
+- Laravel 13 deprecations: the workbench panel uses `PreventRequestForgery` (with a `VerifyCsrfToken` fallback for Laravel 12). Laravel 12 is still supported.
 
 ## v1.0.3 - 2026-11-01
 
