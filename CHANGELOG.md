@@ -2,6 +2,10 @@
 
 All notable changes to `asignua/filament-infinite-scroll` are documented here.
 
+## v1.1.0 - 2026-11-10
+
+- Requires Filament ^5.11.2; no deprecated Filament API was in use, so no code changes.
+
 ## v1.0.3 - 2026-11-01
 
 - Fixed: the Livewire hook is registered in `packageRegistered` (before Livewire's provider boots), so the load-more call no longer fails with "Public method [infiniteScrollLoadMore] not found" when Livewire's provider boots before ours.
